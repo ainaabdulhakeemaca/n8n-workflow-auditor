@@ -45,6 +45,9 @@ If nothing is wrong, say so in one line rather than manufacturing findings.
 - **Never report a structural defect that the linter did not flag.** If you believe you see a
   broken reference, orphan node, or bad connection that the linter missed, say so explicitly
   and ask the user to confirm rather than asserting it.
+- Sticky notes (`stickyNote`) are excluded from every check. Never report one as a defect.
+- `missing-credentials` fires on every public template, because exports strip credential
+  data. When auditing a template someone published, treat it as expected, not a finding.
 - The `field-mismatch` check is a heuristic and false-positives whenever data comes from an
   API response. Never present it as certain, and never promote it to BLOCKER.
 
@@ -66,6 +69,7 @@ If nothing is wrong, say so in one line rather than manufacturing findings.
 | No trigger node at all | BLOCKER | yes |
 | Credentialed node type with no credentials attached | BLOCKER | yes |
 | Hardcoded API key / bearer token in parameters | BLOCKER | yes |
+| Code node JavaScript that does not parse (`node --check`) | BLOCKER | yes |
 | `$json.field` with no upstream node emitting that key | WARNING | heuristic |
 | Network node with no `retryOnFail` and no `onError` | WARNING | yes |
 | Split In Batches feeding HTTP calls with no Wait node | WARNING | yes |

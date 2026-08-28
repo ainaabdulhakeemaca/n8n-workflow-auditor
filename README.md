@@ -33,6 +33,7 @@ That constraint is the whole design. Everything else is checks.
 | No trigger node at all | BLOCKER | yes |
 | Credentialed node type with no credentials attached | BLOCKER | yes |
 | Hardcoded API key or bearer token in parameters | BLOCKER | yes |
+| Code node whose JavaScript does not parse (`node --check`) | BLOCKER | yes |
 | Network node with no `retryOnFail` and no `onError` | WARNING | yes |
 | Split In Batches feeding HTTP calls with no Wait node | WARNING | yes |
 | Writes to a system of record with no IF/Switch/Filter upstream | WARNING | yes |
@@ -51,7 +52,7 @@ python3 n8n_lint.py workflow.json --json    # machine-readable, for an LLM to co
 
 Exit code is `1` when there is at least one BLOCKER, so it drops into CI unchanged.
 
-Try it on the deliberately broken example — 8 blockers, 10 warnings:
+Try it on the deliberately broken example — 9 blockers, 10 warnings:
 
 ```bash
 python3 n8n_lint.py examples/broken-workflow.json
@@ -71,10 +72,10 @@ Full output is in [`examples/sample-output.txt`](examples/sample-output.txt).
            n8n does not warn you about this.
   fix:     Connect it upstream or delete it.
 
-[WARNING] Loop Leads — loop-no-throttle
-  problem: Split In Batches feeding HTTP calls with no Wait node. This will hit
-           rate limits as soon as the input list grows.
-  fix:     Add a Wait node inside the loop, or set batch size to 1 with a delay.
+[BLOCKER] Summarise Run — code-syntax-error
+  problem: JavaScript does not parse: SyntaxError: Invalid or unexpected token
+  fix:     Fix the syntax. This node throws on every execution — the workflow
+           cannot run at all.
 ```
 
 ## Limitations
@@ -89,10 +90,17 @@ Read this part. It's the useful half.
   should never be reported as certain.
 - **It cannot see your logic.** Wrong API for the job, missing pagination, no dedupe key, no
   idempotency — all invisible here. A workflow can pass clean and still be a bad workflow.
+- **The JS syntax check needs `node` on your PATH.** Without it the check is skipped
+  silently rather than guessed at — so a clean report on a machine without Node does
+  not mean the Code nodes parse.
+- **Sticky notes are ignored entirely.** They are canvas documentation, never connected,
+  and never executed. An earlier version flagged them as orphan nodes; that was wrong.
 - **`missing-credentials` has a known false positive.** n8n exports strip credential *data* but
   keep the reference. An entirely absent `credentials` block usually means it was never set, but
   verify before telling someone their workflow is broken.
 - **The credentialed-node list is hardcoded** to ~35 common types. Uncommon nodes won't be checked.
+- **`ungated-write` looks at the node's `operation` field to tell reads from writes.**
+  Nodes that express the same distinction differently may still be misread.
 - **It only reads one workflow.** Sub-workflows called via Execute Workflow are not followed.
 - **Untested against n8n's older export schemas.** Built against current exports; a 2022 file may
   parse but check nothing useful.
