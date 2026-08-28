@@ -1,0 +1,146 @@
+{
+  "name": "Lead Enrichment → CRM (broken example)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "hours", "hoursInterval": 6 }
+          ]
+        }
+      },
+      "id": "a1",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-200, 300]
+    },
+    {
+      "parameters": {
+        "documentId": "1AbCdEfGhIjKlMnOpQrStUvWxYz",
+        "sheetName": "Leads",
+        "options": {}
+      },
+      "id": "a2",
+      "name": "Read Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [20, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 50,
+        "options": {}
+      },
+      "id": "a3",
+      "name": "Loop Leads",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.enrich.example.com/v1/company?domain={{ $json.website }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9abcdef1234567890"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a4",
+      "name": "Enrich Company",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "modelId": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "content": "=Score this lead 1-5 and return JSON only.\nCompany: {{ $node[\"Enrich Comapny\"].json.name }}\nIndustry: {{ $json.industry }}\nEmployees: {{ $json.employee_count }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a5",
+      "name": "Score Lead",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.6,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": "1AbCdEfGhIjKlMnOpQrStUvWxYz",
+        "sheetName": "Leads",
+        "columns": {
+          "value": {
+            "website": "={{ $json.website }}",
+            "score": "={{ $json.score }}",
+            "enriched_at": "={{ $now }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "a6",
+      "name": "Write Score",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [900, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": { "id": "7", "name": "Sheets account" }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": "C0123456789",
+        "text": "=Enrichment run finished: {{ $json.processed }} leads"
+      },
+      "id": "a7",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [900, 500]
+    },
+    {
+      "parameters": {},
+      "id": "a8",
+      "name": "Dedupe Check",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [460, 120]
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [[{ "node": "Read Leads", "type": "main", "index": 0 }]]
+    },
+    "Read Leads": {
+      "main": [[{ "node": "Loop Leads", "type": "main", "index": 0 }]]
+    },
+    "Loop Leads": {
+      "main": [[{ "node": "Enrich Company", "type": "main", "index": 0 }]]
+    },
+    "Enrich Company": {
+      "main": [[{ "node": "Score Lead", "type": "main", "index": 0 }]]
+    },
+    "Score Lead": {
+      "main": [[{ "node": "Write Score", "type": "main", "index": 0 }]]
+    },
+    "Write Score": {
+      "main": [[{ "node": "Send Digest Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" }
+}

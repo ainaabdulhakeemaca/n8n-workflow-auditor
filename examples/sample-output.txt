@@ -1,0 +1,79 @@
+
+8 nodes | 8 blockers | 10 warnings
+
+[BLOCKER] Write Score — dangling-connection
+  problem: 'Write Score' connects to 'Send Digest Email', which does not exist.
+  fix:     Reconnect to a real node or remove the link.
+  at:      connections.Write Score.main[0][0]
+
+[BLOCKER] Notify Slack — orphan-node
+  problem: No incoming connection and not a trigger — this node never executes. n8n does not warn you about this.
+  fix:     Connect it upstream or delete it.
+
+[BLOCKER] Dedupe Check — orphan-node
+  problem: No incoming connection and not a trigger — this node never executes. n8n does not warn you about this.
+  fix:     Connect it upstream or delete it.
+
+[BLOCKER] Score Lead — broken-node-ref
+  problem: Expression references node 'Enrich Comapny', which does not exist (node names are case- and space-sensitive).
+  fix:     Fix the name. Closest existing: Enrich Company.
+  at:      parameters.messages.values[0].content
+
+[BLOCKER] Read Leads — missing-credentials
+  problem: Node type n8n-nodes-base.googleSheets needs credentials but none are attached.
+  fix:     Attach a credential in the node. Note exports strip credential *data* but keep the reference — an empty block means it was never set.
+
+[BLOCKER] Score Lead — missing-credentials
+  problem: Node type n8n-nodes-base.openAi needs credentials but none are attached.
+  fix:     Attach a credential in the node. Note exports strip credential *data* but keep the reference — an empty block means it was never set.
+
+[BLOCKER] Notify Slack — missing-credentials
+  problem: Node type n8n-nodes-base.slack needs credentials but none are attached.
+  fix:     Attach a credential in the node. Note exports strip credential *data* but keep the reference — an empty block means it was never set.
+
+[BLOCKER] Enrich Company — hardcoded-secret
+  problem: Possible Bearer token hardcoded in workflow JSON.
+  fix:     Move to an n8n credential or environment variable. Assume any key that has been in an exported file is compromised — rotate it.
+  at:      parameters.headerParameters.parameters[0].value
+
+[WARNING] Notify Slack — field-mismatch
+  problem: References $json field 'processed' but no upstream Set/Code node emits that key. Known upstream keys: none found.
+  fix:     Confirm the field name against real run data. Heuristic check — false-positives when data comes from an API response.
+  at:      parameters.text
+
+[WARNING] Read Leads — no-error-handling
+  problem: Network call with no retryOnFail and no onError. One 429 or 503 kills the entire execution mid-batch.
+  fix:     Set retryOnFail: true (2-3 tries) and onError: 'continueErrorOutput', then handle the error branch.
+
+[WARNING] Enrich Company — no-error-handling
+  problem: Network call with no retryOnFail and no onError. One 429 or 503 kills the entire execution mid-batch.
+  fix:     Set retryOnFail: true (2-3 tries) and onError: 'continueErrorOutput', then handle the error branch.
+
+[WARNING] Score Lead — no-error-handling
+  problem: Network call with no retryOnFail and no onError. One 429 or 503 kills the entire execution mid-batch.
+  fix:     Set retryOnFail: true (2-3 tries) and onError: 'continueErrorOutput', then handle the error branch.
+
+[WARNING] Write Score — no-error-handling
+  problem: Network call with no retryOnFail and no onError. One 429 or 503 kills the entire execution mid-batch.
+  fix:     Set retryOnFail: true (2-3 tries) and onError: 'continueErrorOutput', then handle the error branch.
+
+[WARNING] Notify Slack — no-error-handling
+  problem: Network call with no retryOnFail and no onError. One 429 or 503 kills the entire execution mid-batch.
+  fix:     Set retryOnFail: true (2-3 tries) and onError: 'continueErrorOutput', then handle the error branch.
+
+[WARNING] Loop Leads — loop-no-throttle
+  problem: Split In Batches feeding HTTP calls with no Wait node. This will hit rate limits as soon as the input list grows.
+  fix:     Add a Wait node inside the loop, or set batch size to 1 with a delay.
+
+[WARNING] Read Leads — ungated-write
+  problem: Writes/sends externally with no IF, Switch or Filter upstream. Every item that reaches it goes out — including empty or malformed ones.
+  fix:     Add a filter, or an approval column checked by an IF node.
+
+[WARNING] Write Score — ungated-write
+  problem: Writes/sends externally with no IF, Switch or Filter upstream. Every item that reaches it goes out — including empty or malformed ones.
+  fix:     Add a filter, or an approval column checked by an IF node.
+
+[WARNING] Notify Slack — ungated-write
+  problem: Writes/sends externally with no IF, Switch or Filter upstream. Every item that reaches it goes out — including empty or malformed ones.
+  fix:     Add a filter, or an approval column checked by an IF node.
+
