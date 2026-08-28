@@ -1,5 +1,5 @@
 
-8 nodes | 8 blockers | 10 warnings
+9 nodes | 9 blockers | 10 warnings
 
 [BLOCKER] Write Score — dangling-connection
   problem: 'Write Score' connects to 'Send Digest Email', which does not exist.
@@ -36,8 +36,13 @@
   fix:     Move to an n8n credential or environment variable. Assume any key that has been in an exported file is compromised — rotate it.
   at:      parameters.headerParameters.parameters[0].value
 
+[BLOCKER] Summarise Run — code-syntax-error
+  problem: JavaScript does not parse: SyntaxError: Invalid or unexpected token
+  fix:     Fix the syntax. This node throws on every execution — the workflow cannot run at all.
+  at:      parameters.jsCode
+
 [WARNING] Notify Slack — field-mismatch
-  problem: References $json field 'processed' but no upstream Set/Code node emits that key. Known upstream keys: none found.
+  problem: References $json field 'processed' but no upstream Set/Code node emits that key. Known upstream keys: ['json', 'leads'].
   fix:     Confirm the field name against real run data. Heuristic check — false-positives when data comes from an API response.
   at:      parameters.text
 

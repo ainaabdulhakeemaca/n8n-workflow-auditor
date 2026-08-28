@@ -1,11 +1,14 @@
 {
-  "name": "Lead Enrichment → CRM (broken example)",
+  "name": "Lead Enrichment \u2192 CRM (broken example)",
   "nodes": [
     {
       "parameters": {
         "rule": {
           "interval": [
-            { "field": "hours", "hoursInterval": 6 }
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
           ]
         }
       },
@@ -13,7 +16,10 @@
       "name": "Every 6 Hours",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [-200, 300]
+      "position": [
+        -200,
+        300
+      ]
     },
     {
       "parameters": {
@@ -25,7 +31,10 @@
       "name": "Read Leads",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [20, 300]
+      "position": [
+        20,
+        300
+      ]
     },
     {
       "parameters": {
@@ -36,7 +45,10 @@
       "name": "Loop Leads",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": [240, 300]
+      "position": [
+        240,
+        300
+      ]
     },
     {
       "parameters": {
@@ -57,7 +69,10 @@
       "name": "Enrich Company",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, 300]
+      "position": [
+        460,
+        300
+      ]
     },
     {
       "parameters": {
@@ -75,7 +90,10 @@
       "name": "Score Lead",
       "type": "n8n-nodes-base.openAi",
       "typeVersion": 1.6,
-      "position": [680, 300]
+      "position": [
+        680,
+        300
+      ]
     },
     {
       "parameters": {
@@ -95,9 +113,15 @@
       "name": "Write Score",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [900, 300],
+      "position": [
+        900,
+        300
+      ],
       "credentials": {
-        "googleSheetsOAuth2Api": { "id": "7", "name": "Sheets account" }
+        "googleSheetsOAuth2Api": {
+          "id": "7",
+          "name": "Sheets account"
+        }
       }
     },
     {
@@ -110,7 +134,10 @@
       "name": "Notify Slack",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.2,
-      "position": [900, 500]
+      "position": [
+        900,
+        500
+      ]
     },
     {
       "parameters": {},
@@ -118,29 +145,100 @@
       "name": "Dedupe Check",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [460, 120]
+      "position": [
+        460,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nlet summary = 'Processed ' + rows.length + ' leads:\n';\nreturn [{ json: { summary } }];"
+      },
+      "id": "a9",
+      "name": "Summarise Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        300
+      ]
     }
   ],
   "connections": {
     "Every 6 Hours": {
-      "main": [[{ "node": "Read Leads", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Read Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Read Leads": {
-      "main": [[{ "node": "Loop Leads", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Loop Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Loop Leads": {
-      "main": [[{ "node": "Enrich Company", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Enrich Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Enrich Company": {
-      "main": [[{ "node": "Score Lead", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Score Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Score Lead": {
-      "main": [[{ "node": "Write Score", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Write Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Write Score": {
-      "main": [[{ "node": "Send Digest Email", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Send Digest Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Summarise Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {},
-  "settings": { "executionOrder": "v1" }
+  "settings": {
+    "executionOrder": "v1"
+  }
 }
